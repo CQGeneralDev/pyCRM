@@ -42,19 +42,68 @@ Base.metadata.create_all(data_conn)
 
 
 class UserAuthDao(object):
-    def __init__(self, algorithm=1):
+    def __init__(self, login_name=None, password='null', algorithm=1):
         self.__algorithm_id = algorithm
         self.__algorithm = get_algorithm(algorithm)
+        self.login_name = login_name
+        self.password_algorithm = algorithm
+        self.login_password = self.__algorithm.encoding(password)
 
-    def save(self, username, password):
+    def insert(self):
         user_auth = UserAuth()
-        user_auth.loginName = username
-        user_auth.loginPassword = self.__algorithm.encoding(password)
-        user_auth.passwordAlgorithm = self.__algorithm_id
+        user_auth.loginName = self.login_name
+        user_auth.loginPassword = self.login_password
+        user_auth.passwordAlgorithm = self.password_algorithm
+        if user_auth.loginName is None:
+            return False, None
         session = Session()
         try:
             session.add(user_auth)
             session.commit()
+            return True, None
+        except:
+            traceback.print_exc()
+            session.rollback()
+            return False, traceback.format_exc()
+        finally:
+            session.close()
+
+    def delete(self):
+        session = Session()
+        try:
+            session.query(UserAuth).filter(UserAuth.loginName == self.login_name).delete()
+            session.commit()
+            return True, None
+        except:
+            traceback.print_exc()
+            session.rollback()
+            return False, traceback.format_exc()
+        finally:
+            session.close()
+
+    def update(self, **kwargs):
+        session = Session()
+        try:
+            user_auth = session.query(UserAuth).filter(UserAuth.loginName == self.login_name).first()
+            for key in kwargs.keys():
+                if key == 'loginPassword':
+                    kwargs[key] = self.__algorithm.encoding(kwargs[key])
+                if key == 'passwordAlgorithm' or key == 'loginName' or key == 'securityId':
+                    raise Exception('不允许修改的属性')
+                setattr(user_auth, key, kwargs[key])
+            session.commit()
+            return True, None
+        except:
+            traceback.print_exc()
+            session.rollback()
+            return False, traceback.format_exc()
+        finally:
+            session.close()
+
+    def select(self):
+        session = Session()
+        try:
+            user_auth = session.query(UserAuth).filter(UserAuth.loginName == self.login_name).first()
             return True, user_auth
         except:
             traceback.print_exc()
@@ -65,9 +114,10 @@ class UserAuthDao(object):
 
 
 class UserAuthService(object):
-    pass
+    def login(self, username, password):
+        pass
 
 
 if __name__ == '__main__':
-    userAuthDao = UserAuthDao()
-    print(userAuthDao.save('gao', '123')[1])
+    userAuthDao = UserAuthDao('aaaa', '123')
+    print(userAuthDao.select()[1].createDate)
