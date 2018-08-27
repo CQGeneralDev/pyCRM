@@ -14,6 +14,7 @@
 __author__ = 'gao'
 
 import uuid
+import json
 import traceback
 
 from datetime import datetime
@@ -41,7 +42,90 @@ class UserAuth(Base):
     lastLoginTime = Column(TIMESTAMP)
 
 
+class UserSession(Base):
+    __tablename__ = 'Session'
+    sessionID = Column(String(36), primary_key=True, default=lambda: ''.join(str(uuid.uuid1()).split('-')))
+    userID = Column(String(36), nullable=False, unique=True, index=True)
+    sessionText = Column(Text)
+    createDate = Column(TIMESTAMP, default=datetime.now)
+    lastChangeTime = Column(TIMESTAMP)
+
+
 Base.metadata.create_all(data_conn)
+
+
+class UserSessionDao(object):
+    def __init__(self, user):
+        self.__user = user
+
+    @insert_error_wapper(30000, '创建用户session失败')
+    def insert(self):
+        user_session = UserSession()
+        user_session.userID = self.__user.securityId
+        session = Session()
+        try:
+            session.add(user_session)
+            session.commit()
+            return True, None
+        except:
+            logger.critical(traceback.format_exc())
+            session.rollback()
+            return False, 30000
+        finally:
+            session.close()
+
+    @insert_error_wapper(30001, '删除用户session失败')
+    def delete(self):
+        session = Session()
+        try:
+            session.query(UserSession).filter(UserSession.userID == self.__user.securityId).delete()
+            session.commit()
+            return True, None
+        except:
+            logger.critical(traceback.format_exc())
+            session.rollback()
+            return False, 30001
+        finally:
+            session.close()
+
+    @insert_error_wapper(30002, '待修改session格式异常,非字典类型')
+    @insert_error_wapper(30003, '修改用户session时数据库异常')
+    def update(self, session_dict):
+        session = Session()
+        try:
+            if type(session_dict) != dict:
+                return False, 30002
+            user_session = session.query(UserSession).filter(UserSession.userID == self.__user.securityId).first()
+            if user_session.sessionText is None:
+                user_session.sessionText = json.dumps(session_dict)
+            else:
+                old_session_dict = json.loads(user_session.sessionText)
+                old_session_dict.update(session_dict)
+                user_session.sessionText = json.dumps(old_session_dict)
+            user_session.lastChangeTime = datetime.now()
+            session.commit()
+            return True, None
+        except:
+            logger.critical(traceback.format_exc())
+            session.rollback()
+            return False, 30003
+        finally:
+            session.close()
+
+    @insert_error_wapper(30004, '未查找到指定用户session')
+    @insert_error_wapper(30005, '查询指定用户session时数据库错误')
+    def select(self):
+        session = Session()
+        try:
+            user_session = session.query(UserSession).filter(UserSession.userID == self.__user.securityId).first()
+            if user_session is None:
+                return False, 30004
+            return True, user_session
+        except:
+            logger.critical(traceback.format_exc())
+            return False, 30005
+        finally:
+            session.close()
 
 
 class UserAuthDao(object):
@@ -120,10 +204,56 @@ class UserAuthDao(object):
             return True, user_auth
         except:
             logger.critical(traceback.format_exc())
-            session.rollback()
             return False, 10006
         finally:
             session.close()
+
+
+class UserSessionService(object):
+    @staticmethod
+    def create_user_session(username):
+        user_auth_dao = UserAuthDao(login_name=username)
+        user_auth = user_auth_dao.select()
+        if user_auth[0]:
+            user_auth = user_auth[1]
+            user_session_dao = UserSessionDao(user_auth)
+            user_session_dao.insert()
+            return user_session_dao.select()
+        else:
+            return user_auth
+
+    @staticmethod
+    def delete_user_session(username):
+        user_auth_dao = UserAuthDao(login_name=username)
+        user_auth = user_auth_dao.select()
+        if user_auth[0]:
+            user_auth = user_auth[1]
+            user_session_dao = UserSessionDao(user_auth)
+            return user_session_dao.delete()
+        else:
+            return user_auth
+
+    @staticmethod
+    def update_user_session(username, session_dict):
+        user_auth_dao = UserAuthDao(login_name=username)
+        user_auth = user_auth_dao.select()
+        if user_auth[0]:
+            user_auth = user_auth[1]
+            user_session_dao = UserSessionDao(user_auth)
+            return user_session_dao.update(session_dict)
+        else:
+            return user_auth
+
+    @staticmethod
+    def get_user_session(username):
+        user_auth_dao = UserAuthDao(login_name=username)
+        user_auth = user_auth_dao.select()
+        if user_auth[0]:
+            user_auth = user_auth[1]
+            user_session_dao = UserSessionDao(user_auth)
+            return user_session_dao.select()
+        else:
+            return user_auth
 
 
 class UserAuthService(object):
@@ -189,6 +319,12 @@ class UserAuthService(object):
         return False, 20004
 
 
+class AuthenticationInterface(object):
+    pass
+
+
 if __name__ == '__main__':
-    UserAuthService.delete_user('gao')
-    logger.info('aaaa')
+    # UserSessionService.create_user_session('gao')
+    print(UserSessionService.update_user_session('gao', {'aaa': 44, 'bbb': 'ccc', 'ww': 2223}))
+    # user=UserAuthDao('gao')
+    # print(user.select())
