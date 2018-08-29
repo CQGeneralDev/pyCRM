@@ -7,7 +7,8 @@ from sqlalchemy.orm import sessionmaker
 
 os.environ["NLS_LANG"] = "SIMPLIFIED CHINESE_CHINA.ZHS16GBK"
 
-data_conn = create_engine('oracle://gao:gao123159@172.17.254.200:1521/mydev', echo=True, pool_size=10)
+# data_conn = create_engine('oracle://gao:gao123159@172.17.254.200:1521/mydev', echo=True, pool_size=10)
+data_conn = create_engine(r'sqlite:///D:\PycharmProjects\db\dev.db', echo=True, pool_size=10)
 Session = sessionmaker(bind=data_conn, autocommit=False, autoflush=False)
 
 
