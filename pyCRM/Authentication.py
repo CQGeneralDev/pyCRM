@@ -456,7 +456,11 @@ class UserAuthService(object):
         return False, 20004
 
 
-class AuthenticationInterface(object):
+class AuthenticationBackTask(object):
+    """
+    Authentication后台处理类
+    主要用于一些数据库的后台任务,例如超时删除等等
+    """
     pass
 
 

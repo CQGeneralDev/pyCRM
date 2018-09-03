@@ -1,12 +1,13 @@
-from pyCRM.Authentication import UserAuthService
-from pyCRM.Interfaces import add, run
+from pyCRM.TimingTask import scheduler
 
 
-@add
+@scheduler.scheduled_job('interval', seconds=3)
 def ping():
+    print('aaaaaaaaaaaaaaaaaaaaa')
     return 'pong'
 
 
 if __name__ == '__main__':
-    print(dir(UserAuthService))
-    print(run('{"jsonrpc": "2.0", "method": "ping", "id": 1}'))
+    import time
+
+    time.sleep(61)
