@@ -7,8 +7,8 @@ from sqlalchemy.orm import sessionmaker
 
 os.environ["NLS_LANG"] = "SIMPLIFIED CHINESE_CHINA.ZHS16GBK"
 
-sql_url = r'sqlite:///D:\dev\dev.db'
-sql_task_url = r'sqlite:///D:\dev\task.db'
+sql_url = r'sqlite:///D:\PycharmProjects\pyCRM\dev.db'
+sql_task_url = r'sqlite:///D:\PycharmProjects\pyCRM\task.db'
 
 # data_conn = create_engine('oracle://gao:gao123159@172.17.254.200:1521/mydev', echo=True, pool_size=10)
 data_conn = create_engine(sql_url, echo=True)
@@ -43,3 +43,8 @@ with open(__login_config, 'r') as f:
 
 logging.config.dictConfig(__config)
 logger = logging.getLogger('show')
+
+__main_config_path = os.path.join(main_path, 'configure', 'crm.yaml')
+main_config = None
+with open(__main_config_path, 'r') as f:
+    main_config = yaml.load(f)

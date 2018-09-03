@@ -20,6 +20,7 @@ import traceback
 from datetime import datetime
 from sqlalchemy import Column, SmallInteger, String, Text, UnicodeText, DateTime, Boolean, Unicode, TIMESTAMP
 from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy import func
 
 from pyCRM import data_conn
 from pyCRM import Session
@@ -46,6 +47,7 @@ class UserAuth(Base):
     securityId = Column(String(36), primary_key=True, default=lambda: ''.join(str(uuid.uuid1()).split('-')))
     loginName = Column(String(255), nullable=False, unique=True, index=True)
     loginPassword = Column(String(1024), nullable=False)
+    userSession = Column(Text)
     passwordAlgorithm = Column(SmallInteger, default=0, nullable=False)
     loginCount = Column(SmallInteger, default=0, nullable=False)
     isActive = Column(Boolean, default=True)
@@ -67,7 +69,7 @@ class UserSession(Base):
     userID = Column(String(36), nullable=False, unique=True, index=True)
     sessionText = Column(Text)
     createDate = Column(TIMESTAMP, default=datetime.now)
-    lastChangeTime = Column(TIMESTAMP)
+    lastChangeTime = Column(TIMESTAMP, default=datetime.now, onupdate=datetime.now)
 
 
 Base.metadata.create_all(data_conn)
@@ -170,6 +172,19 @@ class UserSessionDao(object):
         except:
             logger.critical(traceback.format_exc())
             return False, 30005
+        finally:
+            session.close()
+
+    @insert_error_wapper(30006, '统计指定用户session时数据库错误')
+    def count_user_session(self):
+        session = Session()
+        try:
+            count = session.query(func.count(UserSession.sessionID)).filter(
+                UserSession.userID == self.__user.securityId).scalar()
+            return True, count
+        except:
+            logger.critical(traceback.format_exc())
+            return False, 30006
         finally:
             session.close()
 
@@ -285,8 +300,24 @@ class UserAuthDao(object):
 
 class UserSessionService(object):
     """
-    UserSession模型的Service类
-    """
+        UserSession模型的Service类
+        """
+
+    @staticmethod
+    def check_user_has_session(username):
+        """
+        查询用户session
+        :param username:用户名
+        :return: session数量
+        """
+        user_auth_dao = UserAuthDao(login_name=username)
+        user_auth = user_auth_dao.select()
+        if user_auth[0]:
+            user_auth = user_auth[1]
+            user_session_dao = UserSessionDao(user_auth)
+            return user_session_dao.count_user_session()
+        else:
+            return False, 40000
 
     @staticmethod
     @insert_error_wapper(40000, '查询用户信息失败')
@@ -454,6 +485,54 @@ class UserAuthService(object):
         if result[0]:
             return True, '创建用户成功'
         return False, 20004
+
+    @staticmethod
+    def get_user(username):
+        user = UserAuthDao(login_name=username)
+        return user.select()
+
+
+class AuthenticationDao(object):
+    def __init__(self, username, password):
+        self.__username = username
+        self.__password = password
+
+    @insert_error_wapper(50000, '用户不存在')
+    @insert_error_wapper(50001, '密码检测错误')
+    @insert_error_wapper(50002, '用户以登陆')
+    def login(self):
+        """
+        用户登陆并创建session
+        会检查用户密码以及用户是否已登陆
+        :return:
+        """
+        session = Session()
+        try:
+            user_auth = session.query(UserAuth).filter(UserAuth.loginName == self.__username).first()
+            if user_auth is None:
+                return False, 50000
+            algorithm = get_algorithm(user_auth.passwordAlgorithm)
+            if not algorithm.check(self.__password, user_auth.loginPassword):
+                return False, 50001
+            count = session.query(func.count(UserSession.sessionID)).filter(
+                UserSession.userID == user_auth.securityId).scalar()
+            if count is None or count == 0:
+                pass
+            else:
+                return False, 50002
+            user_session = UserSession()
+            user_session.userID = user_auth.securityId
+            session.add(user_session)
+            if user_auth.userSession is not None:
+                user_session.sessionText = user_auth.userSession
+            session.commit()
+            return True, user_session.sessionID
+        except:
+            logger.critical(traceback.format_exc())
+            session.rollback()
+            return False, 10005
+        finally:
+            session.close()
 
 
 class AuthenticationBackTask(object):

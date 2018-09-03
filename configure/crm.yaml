@@ -1,0 +1,3 @@
+version: 1
+user:
+  timeout: 30*60
