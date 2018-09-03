@@ -13,20 +13,20 @@
 """
 __author__ = 'gao'
 
-import uuid
 import json
 import traceback
-
+import uuid
 from datetime import datetime
-from sqlalchemy import Column, SmallInteger, String, Text, UnicodeText, DateTime, Boolean, Unicode, TIMESTAMP
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy import func
 
-from pyCRM import data_conn
+from sqlalchemy import Column, SmallInteger, String, Text, Boolean, TIMESTAMP
+from sqlalchemy import func
+from sqlalchemy.ext.declarative import declarative_base
+
 from pyCRM import Session
+from pyCRM import data_conn
 from pyCRM import logger
-from pyCRM.Security import get_algorithm
-from pyCRM.Error import insert_error_wapper
+from pyCRM.AuxiliaryTools.Error import insert_error_wapper
+from pyCRM.AuxiliaryTools.Security import get_algorithm
 
 Base = declarative_base()
 

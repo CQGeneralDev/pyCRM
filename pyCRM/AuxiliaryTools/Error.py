@@ -15,15 +15,14 @@
 __author__ = 'gao'
 
 import traceback
-
-from pyCRM import data_conn
-from pyCRM import Session
-
 from functools import wraps
 
-from sqlalchemy import func
 from sqlalchemy import Column, BigInteger, Text
+from sqlalchemy import func
 from sqlalchemy.ext.declarative import declarative_base
+
+from pyCRM import Session
+from pyCRM import data_conn
 
 Base = declarative_base()
 
