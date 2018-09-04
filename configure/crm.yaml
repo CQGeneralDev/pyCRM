@@ -1,3 +1,5 @@
 version: 1
 user:
-  timeout: 30*60
+  check_key:
+  - real_name
+  - card_id

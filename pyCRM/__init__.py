@@ -4,6 +4,7 @@ import os
 import yaml
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
+from sqlalchemy.orm.attributes import InstrumentedAttribute
 
 os.environ["NLS_LANG"] = "SIMPLIFIED CHINESE_CHINA.ZHS16GBK"
 
@@ -12,19 +13,27 @@ sql_url = os.path.join(main_path, 'dev.db')
 sql_task_url = os.path.join(main_path, 'task.db')
 
 # data_conn = create_engine('oracle://gao:gao123159@172.17.254.200:1521/mydev', echo=True, pool_size=10)
-data_conn = create_engine(sql_url, echo=True)
-task_data_conn = create_engine(sql_task_url, echo=True)
+data_conn = create_engine('sqlite:///' + sql_url, echo=True)
+task_data_conn = create_engine('sqlite:///' + sql_task_url, echo=True)
 Session = sessionmaker(bind=data_conn, autocommit=False, autoflush=False)
 
 
-def module_to_dict(module):
+def module_to_dict(module_class, module):
+    """
     module_json = dict()
     keys = dir(module)
-    keys = list(filter(lambda key: key == '__tablename__' or key[0:1] != '_', keys))
+    keys = list(filter(lambda key: key == '__tablename__' or key[0:1] != '_' or key != 'MetaData', keys))
     for key in keys:
         if callable(getattr(module, key)):
             continue
         module_json[key] = getattr(module, key)
+    return module_json
+    """
+    module_json = dict()
+    for key in dir(module_class):
+        if type(getattr(module_class, key)) is InstrumentedAttribute:
+            module_json[key] = getattr(module, key)
+    module_json['__tablename__'] = getattr(module, '__tablename__', None)
     return module_json
 
 
