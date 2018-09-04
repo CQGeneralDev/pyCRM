@@ -1,3 +1,3 @@
-from pyCRM.HumanResourceManagement.controller.service.UserService import delete_user
+from pyCRM.HumanResourceManagement.controller.service.UserService import activation_user
 
-print(delete_user('gao'))
+print(activation_user('gao'))

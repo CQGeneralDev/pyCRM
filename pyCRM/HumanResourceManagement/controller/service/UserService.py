@@ -16,14 +16,12 @@ __author__ = 'gao'
 import json
 
 from pyCRM import main_config
-
 from pyCRM.AuxiliaryTools.Error import insert_error_wapper
-
+from pyCRM.HumanResourceManagement.controller.dao.UserDao import delete_user as d_user
 from pyCRM.HumanResourceManagement.controller.dao.UserDao import insert_user
+from pyCRM.HumanResourceManagement.controller.dao.UserDao import select_user
 from pyCRM.HumanResourceManagement.controller.dao.UserDao import select_user_by_name
 from pyCRM.HumanResourceManagement.controller.dao.UserDao import update_user
-from pyCRM.HumanResourceManagement.controller.dao.UserDao import select_user
-from pyCRM.HumanResourceManagement.controller.dao.UserDao import delete_user  as d_user
 
 
 @insert_error_wapper(200000, '创建新用户失败')
