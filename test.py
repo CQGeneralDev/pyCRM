@@ -1,3 +1,3 @@
-from pyCRM.HumanResourceManagement.controller.service.UserService import activation_user
+from pyCRM.HumanResourceManagement.controller.dao.UserDao import clean_user_session
 
-print(activation_user('gao'))
+print(clean_user_session('3bf0e3ecb02f11e8b9ed74d435943456'))

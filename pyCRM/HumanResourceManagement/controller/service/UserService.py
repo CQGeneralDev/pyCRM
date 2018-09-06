@@ -17,11 +17,17 @@ import json
 
 from pyCRM import main_config
 from pyCRM.AuxiliaryTools.Error import insert_error_wapper
+from pyCRM.HumanResourceManagement.controller.dao.UserDao import clean_user_config as clean_user_config_id
+from pyCRM.HumanResourceManagement.controller.dao.UserDao import clean_user_session as clean_user_session_id
 from pyCRM.HumanResourceManagement.controller.dao.UserDao import delete_user as d_user
+from pyCRM.HumanResourceManagement.controller.dao.UserDao import delete_user_config as delete_user_config_id
+from pyCRM.HumanResourceManagement.controller.dao.UserDao import delete_user_session as delete_user_session_id
 from pyCRM.HumanResourceManagement.controller.dao.UserDao import insert_user
 from pyCRM.HumanResourceManagement.controller.dao.UserDao import select_user
 from pyCRM.HumanResourceManagement.controller.dao.UserDao import select_user_by_name
 from pyCRM.HumanResourceManagement.controller.dao.UserDao import update_user
+from pyCRM.HumanResourceManagement.controller.dao.UserDao import update_user_config
+from pyCRM.HumanResourceManagement.controller.dao.UserDao import update_user_session as update_user_session_id
 
 
 @insert_error_wapper(200000, '创建新用户失败')
@@ -109,3 +115,49 @@ def delete_user(username):
     if not user[0]:
         return user
     return delete_user_id(user[1].userID)
+
+
+def set_user_config_id(user_id, **kwargs):
+    return update_user_config(user_id, **kwargs)
+
+
+def set_user_config(username, **kwargs):
+    user = select_user_by_name(username)
+    if not user[0]:
+        return user
+    return set_user_config_id(user[1].userID, **kwargs)
+
+
+def delete_user_config(username, key):
+    user = select_user_by_name(username)
+    if not user[0]:
+        return user
+    return delete_user_config_id(user[1].userID, key)
+
+
+def clean_user_config(username):
+    user = select_user_by_name(username)
+    if not user[0]:
+        return user
+    return clean_user_config_id(user[1].userID)
+
+
+def update_user_session(username, **kwargs):
+    user = select_user_by_name(username)
+    if not user[0]:
+        return user
+    return update_user_session_id(user[1].userID, **kwargs)
+
+
+def delete_user_session(username, key):
+    user = select_user_by_name(username)
+    if not user[0]:
+        return user
+    return delete_user_session_id(user[1].userID, key)
+
+
+def clean_user_session(username):
+    user = select_user_by_name(username)
+    if not user[0]:
+        return user
+    return clean_user_session_id(user[1].userID)
