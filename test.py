@@ -1,3 +1,10 @@
-from pyCRM.HumanResourceManagement.controller.dao.UserDao import clean_user_session
+from pyCRM.HumanResourceManagement.models.CurrentSession import UserSession
 
-print(clean_user_session('3bf0e3ecb02f11e8b9ed74d435943456'))
+u = UserSession('ssss')
+print(u)
+u['aa'] = 123456
+print(u)
+u['e'] = 234
+print(u)
+u.clear()
+print(u)

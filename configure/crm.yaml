@@ -3,3 +3,8 @@ user:
   check_key:
   - real_name
   - card_id
+session:
+  server_ip: 172.17.254.200
+  port: 6379
+  db: 0
+  time_out: 10

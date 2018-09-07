@@ -1,7 +1,8 @@
 import logging.config
 import os
-
 import yaml
+import redis
+
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.orm.attributes import InstrumentedAttribute
@@ -58,3 +59,5 @@ __main_config_path = os.path.join(main_path, 'configure', 'crm.yaml')
 main_config = None
 with open(__main_config_path, 'r') as f:
     main_config = yaml.load(f)
+redis_poll = redis.ConnectionPool(host=main_config['session']['server_ip'], port=main_config['session']['port'],
+                                  db=main_config['session']['db'], max_connections=100, decode_responses=True)
