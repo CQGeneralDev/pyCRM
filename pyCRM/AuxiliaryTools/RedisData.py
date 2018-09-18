@@ -78,6 +78,9 @@ class RedisDict(object):
         redis_conn.delete(self.__id)
         self.__create_dict(redis_conn, self.__timeout)
 
+    def get_id(self):
+        return self.__id
+
 
 class RedisList(list):
     pass
