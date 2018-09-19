@@ -18,6 +18,7 @@ import json
 from pyCRM import main_config
 from pyCRM.AuxiliaryTools.Error import insert_error_wapper
 from pyCRM.AuxiliaryTools.Security import get_algorithm
+
 from pyCRM.HumanResourceManagement.controller.dao.UserDao import clean_user_config as clean_user_config_id
 from pyCRM.HumanResourceManagement.controller.dao.UserDao import clean_user_session as clean_user_session_id
 from pyCRM.HumanResourceManagement.controller.dao.UserDao import delete_user as d_user
@@ -74,21 +75,6 @@ def activation_user_id(user_id):
     return update_user(user_id, isActive=True)
 
 
-def check_user_password(username, password):
-    """
-    检查用户密码
-    :param username:
-    :param password:
-    :return:
-    """
-    user = select_user_by_name(username)
-    if not user[0]:
-        return user
-    user = user[1]
-    algorithm = get_algorithm(user.passwordAlgorithm)
-    return True, algorithm.check(password, user.loginPassword)
-
-
 def activation_user(username):
     """
     激活用户
@@ -120,6 +106,21 @@ def frozen_user(username):
     if not user[0]:
         return user
     return frozen_user_id(user[1].userID)
+
+
+def check_user_password(username, password):
+    """
+    检查用户账号密码
+    :param username:
+    :param password:
+    :return: 如果用户账号密码验证通过并且未被冻结则返回True
+    """
+    user = select_user_by_name(username)
+    if not user[0]:
+        return user
+    user = user[1]
+    algorithm = get_algorithm(user.passwordAlgorithm)
+    return algorithm.check(password, user.loginPassword) and user.isActive, user.userID
 
 
 def delete_user_id(user_id):

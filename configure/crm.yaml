@@ -4,7 +4,8 @@ user:
   - real_name
   - card_id
 session:
-  server_ip: 172.17.254.200
-  port: 6379
-  db: 0
-  time_out: 10
+  redis_ip: "172.17.254.200"
+  redis_port: 6379
+  redis_db: 0
+  max_conn: 10
+  time_out: 1800
