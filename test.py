@@ -1,10 +1,3 @@
-from pyCRM.HumanResourceManagement.models.CurrentSession import UserSession
+from pyCRM.HumanResourceManagement.interfaces.HRMinterfaces import login
 
-u = UserSession('ssss')
-print(u)
-u['aa'] = 123456
-print(u)
-u['e'] = 234
-print(u)
-u.clear()
-print(u)
+print(login('aa', '123456'))

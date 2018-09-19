@@ -13,9 +13,8 @@
 """
 __author__ = 'gao'
 
-import time
-
 import redis
+import time
 
 redis_pool_list = dict()
 
