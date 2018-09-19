@@ -1,8 +1,7 @@
 import logging.config
 import os
-import yaml
-import redis
 
+import yaml
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.orm.attributes import InstrumentedAttribute

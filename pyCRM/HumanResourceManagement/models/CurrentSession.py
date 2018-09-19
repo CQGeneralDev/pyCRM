@@ -13,11 +13,17 @@
 """
 __author__ = 'gao'
 
-import uuid
+<< << << < Updated
+upstream
 import time
+import uuid
+
 import redis
 
 from pyCRM import redis_poll
+== == == =
+>> >> >> > Stashed
+changes
 from pyCRM import main_config
 
 
