@@ -22,6 +22,12 @@ from pyCRM.HumanResourceManagement.models.CurrentSession import UserSession
 
 @insert_error_wapper(1000001, '认证错误')
 def login(username, password):
+    """
+    登陆系统,需要账号密码,并且账号不能被冻结
+    :param username:
+    :param password:
+    :return:
+    """
     check = check_user_password(username, password)
     if check[0]:
         session = UserSession(check[1], 'session_id_' + ''.join(str(uuid.uuid1()).split('-')))
